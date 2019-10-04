@@ -83,11 +83,10 @@
                 $("#reportHere").text(lineData + "\r\n----------\r\n");
                 // 從azure回傳的結果取key:regions再轉成JSON;
                 let regions = JSON.parse(JSON.stringify(arrayObj.regions));
-                let lineLength = Object.keys(arrayObj.regions).length;
+                let arrayLines = JSON.parse(JSON.stringify(regions[0].lines));
+                let lineLength = arrayLines.length;
                 for (i = 0; i < lineLength; i++) {
-                    // 取第一行的辨識結果再轉成JSON
-                    let arrayLines = JSON.parse(JSON.stringify(regions[i].lines));
-                    // 第一行裡有幾個字"words"
+                    // 有幾個字"words"
                     let wordsLength = Object.keys(arrayLines[i].words).length;
                     // 把第一行包含的字再轉成JSON
                     let arrayWord = JSON.parse(JSON.stringify(arrayLines[i].words));
