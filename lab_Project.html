@@ -10,6 +10,12 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
     <script src="webcam.min.js"></script>
+    <style>
+        .div1 {
+            float: right;
+            padding: 10px;
+        }
+    </style>
 </head>
 
 <body>
@@ -17,9 +23,9 @@
     <div class="container">
         <div class="row">
             <div class="col-sm-4">
-                <form class="form-horizontal">
+                <!--<form class="form-horizontal">
                     <fieldset>
-                        <!-- Text input-->
+                        
                         <div class="form-group">
                             <label class="control-label" for="locationTextBox">Location:</label>
                             <div>
@@ -28,7 +34,7 @@
                             </div>
                         </div>
 
-                        <!-- Text input-->
+                       
                         <div class="form-group">
                             <label class="control-label" for="keyTextBox">Key:</label>
                             <div>
@@ -38,33 +44,33 @@
                         </div>
 
                     </fieldset>
-                </form>
+                </form> -->
 
             </div>
-            <div class="col-sm-4">
+            <div>
                 <div id="cameraDiv"></div>
-                <!-- Button -->
-                <div class="form-group">
-                    <label class="control-label" for="okButton"></label>
-                    <div>
-                        <button type="button" id="okButton" name="okButton" class="btn btn-primary">OK</button>
-                    </div>
-                </div>
-                <!-- Button -->
-                <div class="form-group">
-                    <label class="control-label" for="bookscom"></label>
-                    <div>
-                        <button type="button" id="bookscom" name="bookscom" class="btn btn-primary">博客來</button>
-                    </div>
-                </div>
+
             </div>
-            <div class="col-sm-4">
+            <div>
                 <canvas id="viewPort" width="320" height="240"></canvas>
             </div>
         </div>
 
         <pre id="reportHere"></pre>
-
+        <!-- Button -->
+        <div class="div1" maign=“left” mvalign=“bottom”>
+            <label class="control-label" for="okButton"></label>
+            <div>
+                <button type="button" id="okButton" name="okButton" class="btn btn-primary">OK</button>
+            </div>
+        </div>
+        <!-- Button -->
+        <div class="div1" maign=“left” mvalign=“bottom”>
+            <label class="control-label" for="bookscom"></label>
+            <div>
+                <button type="button" id="bookscom" name="bookscom" class="btn btn-primary">博客來</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -74,7 +80,7 @@
             var arrayObj;
             var searchText = '';
             var report = function (lineData) {
-                $("#reportHere").append(lineData + "\r\n----------\r\n");
+                $("#reportHere").text(lineData + "\r\n----------\r\n");
                 // 從azure回傳的結果取key:regions再轉成JSON;
                 let regions = JSON.parse(JSON.stringify(arrayObj.regions));
                 let lineLength = Object.keys(arrayObj.regions).length;
