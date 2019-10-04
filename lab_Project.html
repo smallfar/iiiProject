@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Lab</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <script src="webcam.min.js"></script>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-4">
+                <form class="form-horizontal">
+                    <fieldset>
+                        <!-- Text input-->
+                        <div class="form-group">
+                            <label class="control-label" for="locationTextBox">Location:</label>
+                            <div>
+                                <input id="locationTextBox" value="southeastasia" name="locationTextBox" type="text"
+                                    placeholder="" class="form-control input-md">
+                            </div>
+                        </div>
+
+                        <!-- Text input-->
+                        <div class="form-group">
+                            <label class="control-label" for="keyTextBox">Key:</label>
+                            <div>
+                                <input id="keyTextBox" name="keyTextBox" value="c37f5e80f9004bde98f920d5e5d0eeef"
+                                    type="text" placeholder="" class="form-control input-md">
+                            </div>
+                        </div>
+
+                    </fieldset>
+                </form>
+
+            </div>
+            <div class="col-sm-4">
+                <div id="cameraDiv"></div>
+                <!-- Button -->
+                <div class="form-group">
+                    <label class="control-label" for="okButton"></label>
+                    <div>
+                        <button type="button" id="okButton" name="okButton" class="btn btn-primary">OK</button>
+                    </div>
+                </div>
+                <!-- Button -->
+                <div class="form-group">
+                    <label class="control-label" for="bookscom"></label>
+                    <div>
+                        <button type="button" id="bookscom" name="bookscom" class="btn btn-primary">博客來</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <canvas id="viewPort" width="320" height="240"></canvas>
+            </div>
+        </div>
+
+        <pre id="reportHere"></pre>
+
+    </div>
+
+    <script>
+
+        $(document).ready(function () {
+
+            var arrayObj;
+            var searchText = '';
+            var report = function (lineData) {
+                $("#reportHere").append(lineData + "\r\n----------\r\n");
+                // 從azure回傳的結果取key:regions再轉成JSON;
+                let regions = JSON.parse(JSON.stringify(arrayObj.regions));
+                let lineLength = Object.keys(arrayObj.regions).length;
+                for (i = 0; i < lineLength; i++) {
+                    // 取第一行的辨識結果再轉成JSON
+                    let arrayLines = JSON.parse(JSON.stringify(regions[i].lines));
+                    // 第一行裡有幾個字"words"
+                    let wordsLength = Object.keys(arrayLines[i].words).length;
+                    // 把第一行包含的字再轉成JSON
+                    let arrayWord = JSON.parse(JSON.stringify(arrayLines[i].words));
+                    for (j = 0; j < wordsLength; j++) {
+                        searchText += arrayWord[j].text;
+                    }
+                    searchText += '+';
+                }
+
+
+                $("#reportHere").append(searchText + "\r\n----------\r\n");
+                // $("#reportHere").append(lineLength + "\r\n----------\r\n");
+            }
+
+            // WebCam 啟動程式
+            Webcam.set({
+                width: 320,
+                height: 240,
+                image_format: 'jpeg',
+                jpeg_quality: 90
+            });
+            Webcam.attach('#cameraDiv');
+
+
+            $("#okButton").on("click", function () {
+                // Lab 練習的程式寫在這邊...
+                // cameraCanvas
+                var viewContext = viewPort.getContext('2d')
+
+                Webcam.snap(function (snappedImage) {
+                    // console.log(snappedImage);
+                    let bufferImage = new Image();
+                    bufferImage.src = snappedImage;
+                    bufferImage.onload = function () {
+                        viewContext.drawImage(bufferImage, 0, 0, 320, 240);
+
+                        // 將 Canvas 轉成 Blob，然後 POST 給 Face API:(因為webcam抓到影像是base64)
+                        var data = viewPort.toDataURL('image/jpeg');
+                        fetch(data)
+                            .then(function (res) {
+                                return res.blob()
+                            })
+                            .then(function (blobData) {
+                                var subscriptionKey = $("#keyTextBox").prop("value");
+                                var apiUrl =
+                                    "https://" + $("#locationTextBox").val()
+                                    + ".api.cognitive.microsoft.com/vision/v2.0/ocr"
+                                var params = {
+                                    "language": "zh-Hant",
+                                    "detectOrientation": "true",
+                                };
+                                apiUrl += "?" + $.param(params);
+                                console.log(apiUrl);
+                                $.ajax({
+                                    type: "post",
+                                    url: apiUrl,
+                                    contentType: "application/octet-stream",
+                                    headers: {
+                                        'Ocp-Apim-Subscription-Key': subscriptionKey
+                                    },
+                                    processData: false,
+                                    data: blobData
+                                }).then(function (e) {
+                                    // arrayObj = JSON.stringify(e);
+                                    arrayObj = e;
+                                    report(JSON.stringify(e, null, 2));
+                                })
+
+                            });
+                        // -------------------------------------------
+                    }
+
+                });  // End of Webcam.snap
+
+
+            });
+
+            $("#bookscom").on("click", function () {
+                window.open('https://search.books.com.tw/search/query/key/' + searchText);
+            });
+        })
+
+    </script>
+
+</body>
+
+</html>
